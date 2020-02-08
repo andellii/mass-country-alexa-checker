@@ -6,8 +6,9 @@
 import os,sys,re,time
 import urllib2
 import socket
-import threading
-import json
+import bs4
+from multiprocessing import Pool
+from multiprocessing.dummy import Pool as ThreadPool
 
 red = '\033[91m'
 green = '\033[92m'
@@ -18,11 +19,11 @@ reset = '\033[0m'
 os.system('clear')
 os.system('cls')
 
-def write(s):
-	for c in s + '\n':
-		sys.stdout.write(c)
-		sys.stdout.flush()
-		time.sleep(0.0010)
+print(green+"  ___  __   _  _  __ _  ____  ____  _  _ ")
+print(" / __)/  \ / )( \(  ( \(_  _)(  _ \( \/ )")
+print("( (__(  O )) \/ (/    /  )(   )   / )  / ")
+print(" \___)\__/ \____/\_)__) (__) (__\_)(__/  "+reset)
+print(blue+"Mass Web Country Checker By Sterben404\n"+reset)
 
 def error():
 	try:
@@ -41,33 +42,20 @@ def error():
 	pass
 error()
 
-def process(web):
-	for file in web:
-		ls = file.replace('http://','').replace('https://','').replace('/','')
-		ip = socket.gethostbyname(ls)
-		r_country = urllib2.urlopen('http://free.ipwhois.io/xml/%s' % ip)
-		r_alexa = urllib2.urlopen('http://tools.mercenie.com/alexa-rank-checker/api/?format=json&urls=http://%s' % ls).read()
-		parsing_json = json.loads(r_alexa)
-		alexa = parsing_json['alexaranks']['first']['alexarank']['0']
-		country = re.findall('(?<=<country>)(.*?)(?=<)',r_country.read())
+def proc(url):
+	url = url.replace('http://','').replace('http://www.','').replace('https://www.','').replace('https://','').replace('www.','')
+	ip = socket.gethostbyname(url)
+	alexa = bs4.BeautifulSoup(urllib2.urlopen('http://data.alexa.com/data?cli=10&dat=snbamz&url=http://'+url), "xml").find("REACH")['RANK']
+	country = bs4.BeautifulSoup(urllib2.urlopen('http://data.alexa.com/data?cli=10&dat=snbamz&url=http://'+url), "xml").find("COUNTRY")['NAME']
+	print(green+"\nWeb 	: "+url+reset+"\nIP 	: "+ip+"\nAlexa 	: "+alexa+"\nCountry : "+country+"\n")
+	with open('result.txt', 'ab') as result:
+		result.write(url+" --> "+ip+" --> "+alexa+" --> "+country+"\n")
+		result.close()
+ls = open(sys.argv[1], 'rb').read().splitlines()
+t = ThreadPool(100)
+t.map(proc, ls)
+t.close()
+t.join()
 
-		print("Website    : ")+green+ls+reset
-		print("Alexa      : "+green+"{:,}".format(float(alexa)).replace('.0','')+reset)
-		print("IP Address : "+green+"".join(ip)) + reset
-		print("Country    : "+green+"".join(country)) + reset +'\n'
-
-		with open('success.txt', 'ab') as live:
-			live.write(ls+" | "+"".join(country)+" | "+"{:,}".format(float(alexa)).replace('.0','')+'\n')
-			live.close()
-	pass
-	print("Hasil Di Simpan : "+green+"success.txt"+reset)
-if __name__ == "__main__":
-	print(green+"  ___  __   _  _  __ _  ____  ____  _  _ ")
-	print(" / __)/  \ / )( \(  ( \(_  _)(  _ \( \/ )")
-	print("( (__(  O )) \/ (/    /  )(   )   / )  / ")
-	print(" \___)\__/ \____/\_)__) (__) (__\_)(__/  "+reset)
-	write(blue+"Mass Web Country Checker By Sterben404\n"+reset)
-	file = sys.argv[1]
-	web = open(file, 'r').read().splitlines()
-	t = threading.Thread(target=process, args=(web, ))
-	t.start()
+if __name__ == '__main__':
+	print("Save File : result.txt")
