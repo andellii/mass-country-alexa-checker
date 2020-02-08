@@ -16,8 +16,11 @@ yellow = '\033[93m'
 blue = '\033[96m'
 purple = '\033[95m'
 reset = '\033[0m'
-os.system('clear')
-os.system('cls')
+if os.name == 'nt':
+	os.system('cls')
+else:
+	os.system('clear')
+pass
 
 print(green+"  ___  __   _  _  __ _  ____  ____  _  _ ")
 print(" / __)/  \ / )( \(  ( \(_  _)(  _ \( \/ )")
