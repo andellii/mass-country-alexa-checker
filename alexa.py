@@ -1,12 +1,9 @@
 #!/bin/python2.7
-# contact Whatsapp: 085886343536
-# 19 January 2020
-# Sterben404
-
 import os,sys,re,time
 import urllib2
 import socket
 import bs4
+import json
 from multiprocessing import Pool
 from multiprocessing.dummy import Pool as ThreadPool
 
@@ -16,11 +13,8 @@ yellow = '\033[93m'
 blue = '\033[96m'
 purple = '\033[95m'
 reset = '\033[0m'
-if os.name == 'nt':
-	os.system('cls')
-else:
-	os.system('clear')
-pass
+os.system('clear')
+os.system('cls')
 
 print(green+"  ___  __   _  _  __ _  ____  ____  _  _ ")
 print(" / __)/  \ / )( \(  ( \(_  _)(  _ \( \/ )")
@@ -46,14 +40,19 @@ def error():
 error()
 
 def proc(url):
-	url = url.replace('http://','').replace('http://www.','').replace('https://www.','').replace('https://','').replace('www.','')
-	ip = socket.gethostbyname(url)
-	alexa = bs4.BeautifulSoup(urllib2.urlopen('http://data.alexa.com/data?cli=10&dat=snbamz&url=http://'+url), "xml").find("REACH")['RANK']
-	country = bs4.BeautifulSoup(urllib2.urlopen('http://data.alexa.com/data?cli=10&dat=snbamz&url=http://'+url), "xml").find("COUNTRY")['NAME']
-	print(green+"\nWeb 	: "+url+reset+"\nIP 	: "+ip+"\nAlexa 	: "+alexa+"\nCountry : "+country+"\n")
-	with open('result.txt', 'ab') as result:
-		result.write(url+" --> "+ip+" --> "+alexa+" --> "+country+"\n")
-		result.close()
+	try:
+		url = url.replace('http://','').replace('http://www.','').replace('https://www.','').replace('https://','').replace('www.','').replace('/', '')
+		ip = socket.gethostbyname(url)
+		alexa = bs4.BeautifulSoup(urllib2.urlopen('http://data.alexa.com/data?cli=10&dat=snbamz&url=http://'+url), "xml").find("REACH")['RANK']
+		country = urllib2.urlopen('http://ip-api.com/json/'+url)
+		parsing_json = json.loads(country.read())
+		print(green+"\nWeb 	: "+url+reset+"\nIP 	: "+ip+"\nAlexa 	: "+alexa+"\nCountry : "+parsing_json['country']+"\n")
+		with open('result.txt', 'ab') as result:
+			result.write(url+" --> "+ip+" --> "+alexa+" --> "+parsing_json['country']+"\n")
+			result.close()
+	except TypeError:
+		print(green+"\nWeb 	: "+url+reset+"\nIP 	: "+ip+"\nAlexa 	: 0""\nCountry : None""\n")
+	pass
 ls = open(sys.argv[1], 'rb').read().splitlines()
 t = ThreadPool(100)
 t.map(proc, ls)
