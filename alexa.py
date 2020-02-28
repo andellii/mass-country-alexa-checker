@@ -21,7 +21,7 @@ print(" / __)/  \ / )( \(  ( \(_  _)(  _ \( \/ )")
 print("( (__(  O )) \/ (/    /  )(   )   / )  / ")
 print(" \___)\__/ \____/\_)__) (__) (__\_)(__/  "+reset)
 print(blue+"Mass Web Country Checker By Sterben404\n"+reset)
-
+print("Example List: www.google.com")
 def error():
 	try:
 		sys.argv[1]
@@ -46,15 +46,15 @@ def proc(url):
 		alexa = bs4.BeautifulSoup(urllib2.urlopen('http://data.alexa.com/data?cli=10&dat=snbamz&url=http://'+url), "xml").find("REACH")['RANK']
 		country = urllib2.urlopen('http://ip-api.com/json/'+url)
 		parsing_json = json.loads(country.read())
-		print(green+"\nWeb 	: "+url+reset+"\nIP 	: "+ip+"\nAlexa 	: "+alexa+"\nCountry : "+parsing_json['country']+"\n")
+		print(green+"\nWeb 	: "+url+reset+"\nIP 	: "+ip+"\nAlexa 	: "+"{:,}".format(int(alexa))+"\nCountry : "+parsing_json['country']+"\n")
 		with open('result.txt', 'ab') as result:
-			result.write(url+" --> "+ip+" --> "+alexa+" --> "+parsing_json['country']+"\n")
+			result.write("WEB : "+url+"\nIP : "+ip+"\n"+"Alexa : "+"{:,}".format(int(alexa))+"\nCountry : "+parsing_json['country']+"\n\n")
 			result.close()
-	except TypeError:
+	except (KeyError,TypeError):
 		print(green+"\nWeb 	: "+url+reset+"\nIP 	: "+ip+"\nAlexa 	: 0""\nCountry : None""\n")
 	pass
 ls = open(sys.argv[1], 'rb').read().splitlines()
-t = ThreadPool(100)
+t = ThreadPool(15)
 t.map(proc, ls)
 t.close()
 t.join()
