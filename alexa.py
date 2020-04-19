@@ -50,7 +50,7 @@ def proc(url):
 		with open('result.txt', 'ab') as result:
 			result.write("WEB : "+url+"\nIP : "+ip+"\n"+"Alexa : "+"{:,}".format(int(alexa))+"\nCountry : "+parsing_json['country']+"\n\n")
 			result.close()
-	except (KeyError,TypeError):
+	except (KeyError,TypeError,socket.gaierror):
 		print(green+"\nWeb 	: "+url+reset+"\nIP 	: "+ip+"\nAlexa 	: 0""\nCountry : None""\n")
 	pass
 ls = open(sys.argv[1], 'rb').read().splitlines()
